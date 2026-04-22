@@ -1,0 +1,48 @@
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  '' close;
+}
+
+upstream vexa_api_gateway {
+  server ${API_UPSTREAM};
+  keepalive 32;
+}
+
+upstream vexa_dashboard {
+  server ${DASHBOARD_UPSTREAM};
+  keepalive 16;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name ${DOMAIN};
+
+  client_max_body_size 50m;
+
+  location / {
+    proxy_pass http://vexa_api_gateway;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
+
+  location /dashboard/ {
+    proxy_pass http://vexa_dashboard/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_read_timeout 120s;
+    proxy_send_timeout 120s;
+  }
+}

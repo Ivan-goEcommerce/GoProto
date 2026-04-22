@@ -1,0 +1,21 @@
+# Vexa wird offiziell mit eigenem Stack installiert (PostgreSQL, Redis, MinIO, APIs, …).
+# Siehe: scripts/setup-vexa.sh  →  klont https://github.com/Vexa-ai/vexa  →  deploy/compose → make all
+#
+# Optional: nur PostgreSQL 15 (z. B. für Tests mit REMOTE_DB). Start: docker compose up -d
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: vexa-postgres-standalone
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vexa
+      POSTGRES_PASSWORD: vexa123
+      POSTGRES_DB: vexa
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
